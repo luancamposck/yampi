@@ -1,0 +1,266 @@
+{% set section = footer %}
+{% set isBusiness = merchantData.company.person_type == 'business' %}
+{% set storeName = isBusiness ? merchantData.company.razao_social : merchantData.company.name %}
+{% set storeDocument = isBusiness ? merchantData.company.cnpj : merchantData.company.cpf %}
+{% set storeDocument = storeDocument | only_numbers %}
+
+{% set showBrand = section.params.show_brand %}
+{% set showAddress = section.params.show_address %}
+{% set showPayment = section.params.show_payment_icons %}
+{% set showYampiBrand = section.params.show_yampi_brand %}
+{% set showDescription = section.params.show_description %}
+{% set showSecurityLabel = section.params.show_security_label %}
+{% set showBusinessInfo = section.params.show_business_information and storeName and storeDocument %}
+{% set descriptionEnabled = section.params.description_enabled and (showDescription or showBrand) %}
+
+{% set pages = merchantData.pages %}
+{% set email = merchantData.company.email %}
+{% set socialMedias = merchantData.company.social | filter(social_media => social_media) %}
+{% set phoneNumber = merchantData.company.phone.number %}
+{% set whatsappNumber = merchantData.company.whatsapp.number %}
+
+{% set showEmail = section.params.show_email and email %}
+{% set showPhone = section.params.show_phone and phoneNumber %}
+{% set showWhatsapp = section.params.show_whatsapp and whatsappNumber %}
+
+{% set categories = section.params.categories_type == 'all' ? categories : featured_categories %}
+
+{% set showPages = section.params.show_pages and pages|length %}
+{% set showCookiesPolicyPage = merchantData.cookies_policy.show_page %}
+{% set showCategories = section.params.categories_enabled and categories|length %}
+{% set showSocialMedias = section.params.social_enabled and socialMedias|length %}
+{% set showContact = section.params.support_enabled and (showWhatsapp or showPhone or showEmail) %}
+{% set haveAllColumns = descriptionEnabled and showPages and showCategories and showSocialMedias and showContact %}
+
+<rocket-emitter emits="footer" label="Rodapé" order="{{ section.order }}">
+	<vue-section class="footer {{ section.params.newsletter_enabled ? null : 'top-line' }} {{ haveAllColumns ? '-full-columns' : null }}" style="
+		            --footer-font-color: {{ section.params.text_color }};
+		            --footer-bg-color: {{ section.params.background_color }};
+		            --footer-opacity-color: {{ hex_to_rgba(section.params.text_color, 0.5) }};
+		            --footer-hr-color: {{ hex_to_rgba(section.params.text_color, 0.1) }};
+		        " :delay="500">
+		{% include 'elements/newsletter.twig' %}
+
+		<div class="holder-footer {{ " #{section.section_alias}-#{section.order}" }}">
+			<div class="container">
+				<div class="holder-footer-section section-1 flex -hcenter">
+					{% if descriptionEnabled %}
+						<div class="holder-footer-logo">
+							{% if showBrand %}
+								<div class="logo">
+									<img src="{{ merchantData.logo_url }}" alt="{{ merchantData.company.razao_social }}" width="auto" height="auto"/>
+								</div>
+							{% endif %}
+							{% if showDescription %}
+								<div class="-description">
+									{{ merchantData.manifest.description }}
+								</div>
+							{% endif %}
+						</div>
+					{% endif %}
+					<div class="holder-footer-info flex">
+						{% if showCategories %}
+							<div class="-categories">
+								<div class="-title">Categorias</div>
+								<expandable title="Categorias">
+									<ul>
+										{% for category in categories %}
+											<li>
+												<a href="{{ category['url_path'] }}">{{ category['name'] }}</a>
+											</li>
+										{% endfor %}
+									</ul>
+								</expandable>
+							</div>
+						{% endif %}
+						{% if showPages %}
+							<div class="-pages">
+								<div class="-title">Informações</div>
+								<expandable title="Informações">
+									<ul>
+										{% for page in pages %}
+											{% if page['slug'] != merchantData.cookies_policy.slug or showCookiesPolicyPage %}
+												<li>
+													<a href="{{ page['path'] }}">{{ page['name'] }}</a>
+												</li>
+											{% endif %}
+										{% endfor %}
+									</ul>
+								</expandable>
+							</div>
+						{% endif %}
+						{% if showContact %}
+							<div class="flex holder-contact">
+								<div class="-contact">
+									<div class="-title">Atendimento</div>
+									<expandable title="Atendimento">
+										<ul>
+											{% if showPhone %}
+												<li class="contact-phone">
+													<a class="flex -vcenter" href="tel:{{ phoneNumber }}" target="_blank" rel="noreferrer nofollow">
+														<svg width="17" height="17" fill="none"><defs/><path d="M.514 6.16C.181 5.26-.06 4.342.013 3.368c.046-.6.272-1.113.711-1.533.478-.452.93-.926 1.4-1.384.612-.604 1.38-.6 1.993 0 .378.37.753.749 1.128 1.127.363.364.73.727 1.094 1.094.638.646.642 1.399.004 2.041-.46.46-.915.922-1.381 1.373-.122.118-.134.218-.069.367.306.734.75 1.388 1.247 2 1.002 1.23 2.134 2.324 3.484 3.169.29.18.608.313.91.478.157.084.26.057.386-.073.456-.47.922-.933 1.389-1.396.612-.604 1.377-.607 1.989 0 .75.742 1.495 1.488 2.237 2.237.623.627.62 1.395-.008 2.026-.424.428-.872.834-1.27 1.28-.58.65-1.315.865-2.149.819-1.216-.065-2.337-.47-3.419-.994a18.604 18.604 0 01-6.169-4.825C2.25 9.661 1.202 8.017.514 6.16z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M6.178 2.832c-.242-.244-.485-.486-.728-.728l-.365-.364-.001-.001C4.709 1.36 4.335.983 3.958.614 3.686.347 3.395.227 3.12.227s-.565.118-.837.386c-.187.183-.375.371-.564.561A37.66 37.66 0 01.88 2c-.396.379-.599.837-.641 1.386-.069.927.16 1.808.488 2.695.677 1.828 1.71 3.45 2.967 4.949a18.379 18.379 0 006.094 4.766c1.07.518 2.159.909 3.332.972.782.043 1.443-.156 1.968-.743.27-.304.568-.593.86-.877.142-.139.283-.276.418-.412.281-.283.406-.579.407-.856.002-.277-.12-.571-.399-.851a307.98 307.98 0 00-2.236-2.235c-.272-.27-.561-.39-.835-.39-.273.001-.563.121-.835.39-.467.463-.931.923-1.385 1.391a.586.586 0 01-.3.182.524.524 0 01-.356-.067h-.001a10.21 10.21 0 00-.35-.18l-.102-.05a5.825 5.825 0 01-.47-.255c-1.377-.862-2.527-1.974-3.54-3.219-.504-.62-.962-1.293-1.28-2.053l.001.001.208-.09-.21.087.002.002a.562.562 0 01-.051-.323.541.541 0 01.17-.296c.349-.337.69-.68 1.033-1.024l.345-.346c.288-.29.412-.583.411-.858 0-.276-.127-.572-.415-.864z"/></svg>
+														{{ phoneNumber | mask('## #########') }}
+													</a>
+												</li>
+											{% endif %}
+											{% if showEmail %}
+												<li class="contact-email">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="17" viewBox="0 0 22 17" fill="none">
+                                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M19.3888 0.0395508H2.61121C1.1714 0.0395508 0 1.16449 0 2.54719V14.2414C0 15.6241 1.1714 16.7491 2.61121 16.7491H19.3888C20.8287 16.7491 22 15.6241 22 14.2414V2.54719C22 1.16449 20.8287 0.0395508 19.3888 0.0395508ZM19.7862 14.2416C19.7861 14.398 19.6004 14.5352 19.3888 14.5352H2.61121C2.39957 14.5352 2.21395 14.398 2.21395 14.2414V4.09357L9.80203 10.4998C9.95759 10.6312 10.1554 10.7035 10.3591 10.7035L11.6407 10.7036C11.8442 10.7036 12.0422 10.6312 12.1978 10.4998L19.7862 4.09334V14.2416ZM3.61968 2.25339L11 8.50535L18.3804 2.25339H3.61968Z"/>
+                                                    </svg>
+													<a class="flex -vcenter footer-email" href="mailto:{{ email }}" rel="nofollow">
+														{{ email }}
+													</a>
+												</li>
+											{% endif %}
+                                            {% if showWhatsapp %}
+												<li class="contact-whatsapp" style="position: relative;">
+                                                    <span style="font-size: 13px; position: absolute; left: 30px; color: #00aab2" >WhatsApp</span>
+													<whatsapp class="flex -vcenter" url="{{ merchantData.company.whatsapp.url }}" number="{{ whatsappNumber }}"></whatsapp>
+												</li>
+											{% endif %}
+										</ul>
+									</expandable>
+                                    <div id="horario-atendimento">
+                                        <span style="font-size: 12px; line-height: 20px; color: #999; display: block; margin-top: 10px;">
+                                          Horário de atendimento
+                                        </span>
+                                        <span style="font-size: 12px; line-height: 20px; color: #999; display: block;">
+                                          Segunda a Sexta-feira das 08:00h às 20:00h
+                                        </span>
+                                        <span style="font-size: 12px; line-height: 20px; color: #999; display: block;">
+                                          Sábado das 10:00h às 14:00h
+                                        </span>
+                                    </div>
+								</div>
+							</div>
+						{% endif %}
+						{% if showSocialMedias %}
+							<div class="-social-midia">
+                                <div class="-title">
+                                    Nossas redes
+                                </div>
+								<ul class="inline">
+									{% for media, mediaUrl in socialMedias %}
+										{% set media = media|replace({'_url': ''}) %}
+										{% if section.params['show_' ~ media] %}
+											<a href="{{ mediaUrl }}">{{ media }}</a>
+											<li class="social-midia -{{ media }}">
+												<a class="-clean" href="{{ mediaUrl }}" target="_blank" rel="noreferrer nofollow">
+													<fa-icon :icon="['fab', '{{ social_media_fa(media) }}']"></fa-icon>
+													<span class="-invisible">{{ media }}</span>
+												</a>
+											</li>
+										{% endif %}
+									{% endfor %}
+								</ul>
+							</div>
+						{% endif %}
+					</div>
+				</div>
+				{% if showPayment or showSecurityLabel %}
+					<div class="holder-footer-section section-2" style="border-top: solid 1px #eee; padding-top: 41px;">
+						{% if showPayment %}
+							<span class="holder-cards">
+                                <p style="font-size: 18px; color: #111111; margin-bottom: 25px; font-weight: 800;">
+                                    Pagamento
+                                </p>
+								<ul  class="inline"class="inline">
+									{% for card in merchantData.payments %}
+										<li>
+											<img v-lazyload src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="{{ card['alias'] }}" data-src="{{ card['icon_url'] }}" width="35" height="24">
+										</li>
+									{% endfor %}
+								</ul>
+							</span>
+						{% endif %}
+						{% if showSecurityLabel %}
+                            <span>
+                                <p style="font-size: 18px; color: #111111; margin-top: 25px; font-weight: 800;">
+                                    Segurança
+                                </p>
+                                <ul class="inline">
+                                    <li>
+                                        <i class="icon icon-security"></i>
+                                    </li>
+                                    <li>
+                                         <svg xmlns="http://www.w3.org/2000/svg" width="116" height="37" viewBox="0 0 116 37" fill="none">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M23.4088 22.5574C22.6487 24.6174 21.4991 26.4086 19.9917 27.8807C18.2758 29.5562 16.029 30.8876 13.3135 31.8374C13.2244 31.8684 13.1314 31.8939 13.038 31.9127C12.9146 31.937 12.789 31.9502 12.6645 31.9519H12.6401C12.5074 31.9519 12.3741 31.9385 12.2418 31.9127C12.1484 31.8939 12.0567 31.8684 11.9681 31.838C9.24937 30.8898 6.99972 29.559 5.28211 27.8835C3.774 26.4114 2.62469 24.6213 1.86567 22.5613C0.485505 18.8158 0.564039 14.6898 0.627255 11.3741L0.628334 11.3232C0.641063 11.0494 0.649261 10.7618 0.653792 10.4442C0.676878 8.88498 1.91659 7.595 3.47605 7.50805C6.72744 7.3266 9.24268 6.26618 11.3918 4.17144L11.4106 4.15418C11.7674 3.82688 12.217 3.66636 12.6645 3.67305C13.096 3.67866 13.5258 3.83897 13.8699 4.15418L13.8883 4.17144C16.0378 6.26618 18.553 7.3266 21.8044 7.50805C23.3639 7.595 24.6036 8.88498 24.6267 10.4442C24.6312 10.764 24.6394 11.0511 24.6521 11.3232L24.6528 11.3448C24.7158 14.6667 24.7939 18.801 23.4088 22.5574Z" fill="#23DA00"/>
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M23.4088 22.5572C22.6487 24.6172 21.4992 26.4084 19.9917 27.8805C18.2758 29.556 16.029 30.8874 13.3135 31.8372C13.2244 31.8682 13.1314 31.8937 13.038 31.9125C12.9146 31.9368 12.789 31.95 12.6646 31.9517V3.67285C13.0961 3.67846 13.5258 3.83877 13.87 4.15398L13.8883 4.17124C16.0378 6.26598 18.5531 7.3264 21.8045 7.50785C23.3639 7.5948 24.6036 8.88478 24.6267 10.444C24.6313 10.7638 24.6395 11.0509 24.6522 11.323L24.6528 11.3446C24.7158 14.6665 24.7939 18.8008 23.4088 22.5572Z" fill="#00A801"/>
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M52.4053 2.64134C51.7734 3.28497 51.1785 3.89084 50.5644 4.51642C50.3339 4.33416 50.0824 4.11743 49.8148 3.92532C45.7333 0.971505 39.9527 3.52798 39.2112 8.57525C38.6712 12.2433 40.8893 15.7981 44.4421 16.5386C47.0019 17.0706 49.2941 16.5057 51.0415 14.3811C51.7057 13.5749 51.9749 12.5914 52.099 11.4962C50.0228 11.4962 47.9949 11.4962 45.9428 11.4962C45.9428 10.5882 45.9428 9.73445 45.9428 8.84288H54.6427C55.4729 13.6767 53.0049 18.1444 48.1303 19.1591C44.5275 19.9094 41.3487 18.9473 38.7937 16.1872C34.8702 11.9478 35.6423 5.07631 40.3847 1.79082C43.9488 -0.678628 48.3544 -0.588322 51.7041 2.02562C51.9539 2.22101 52.1812 2.44431 52.4053 2.64134ZM91.6634 8.31418C91.6634 7.92341 91.6634 7.63607 91.6634 7.32246H94.2442V7.79369C94.2442 11.4026 94.2506 15.0099 94.2409 18.6189C94.2377 20.0014 93.9911 21.3346 93.256 22.525C92.2792 24.1078 90.7849 24.781 89.0246 24.9682C86.5583 25.2293 84.1725 23.8681 83.1102 21.5924C83.0732 21.512 83.0457 21.4249 82.9893 21.2788C83.7679 20.9455 84.5352 20.6171 85.2364 20.3183C85.6426 20.8158 85.9699 21.3445 86.4132 21.7369C87.4481 22.6515 88.657 22.7286 89.8821 22.2065C91.0283 21.7172 91.5119 20.7156 91.6199 19.5105C91.6634 19.0277 91.6263 18.5384 91.6263 17.967C90.9847 18.6616 90.2642 19.1164 89.4034 19.2691C86.9661 19.7042 85.0478 18.7749 83.6309 16.7947C81.1098 13.2728 82.9281 8.15656 87.0644 7.0811C88.7522 6.64106 90.2868 6.96781 91.6634 8.31418ZM91.8762 13.1135C91.8197 12.7359 91.8052 12.3467 91.7005 11.9855C91.3265 10.695 90.5672 9.74266 89.2277 9.46025C88.0155 9.20411 86.9661 9.60474 86.1407 10.5439C84.9398 11.9116 84.8979 14.1956 86.0279 15.6355C87.2047 17.1362 89.3276 17.3366 90.6994 16.0542C91.536 15.271 91.8552 14.2563 91.8762 13.1135Z" fill="#4285F4"/>
+                                            <path d="M61.8272 19.376C58.3372 19.3661 55.6968 16.6603 55.7033 13.1022C55.7097 9.59014 58.3759 6.91053 61.8578 6.91217C65.3767 6.91381 68.0156 9.61313 68.0043 13.2024C67.9946 16.6997 65.3074 19.3859 61.8272 19.376ZM61.8691 9.39968C61.163 9.37834 60.5456 9.58358 59.9847 9.97436C58.2792 11.1615 57.8907 13.7064 59.1432 15.4797C60.1991 16.9739 62.2044 17.3466 63.7051 16.3237C64.6256 15.6965 65.1172 14.7885 65.2591 13.695C65.5782 11.2173 63.8325 9.33893 61.8691 9.39968ZM111.255 16.6077C110.172 18.1774 108.747 19.1002 106.917 19.3481C104.193 19.7175 101.629 18.2365 100.553 15.6866C99.2847 12.6819 100.453 9.0089 103.131 7.57879C106.099 5.99434 109.516 7.23727 110.896 10.4078C111.06 10.7838 111.202 11.1697 111.373 11.5949C110 12.1729 108.642 12.7426 107.288 13.314C105.931 13.8871 104.575 14.4617 103.22 15.0364C104.056 17.1643 107.459 17.8112 109.182 15.1989C109.864 15.662 110.546 16.1266 111.255 16.6077ZM102.781 12.9167C104.575 12.1581 106.356 11.4045 108.136 10.6525C107.767 9.66239 106.531 9.13533 105.302 9.41446C103.784 9.75926 102.639 11.3273 102.781 12.9167Z" fill="#EA4335"/>
+                                            <path d="M75.2195 19.3769C71.7296 19.3671 69.0891 16.6612 69.0956 13.1031C69.102 9.59106 71.7683 6.91144 75.2501 6.91309C78.7691 6.91473 81.4079 9.61405 81.3966 13.2033C81.3869 16.7006 78.6998 19.3868 75.2195 19.3769ZM75.2598 9.4006C74.5538 9.37925 73.9364 9.58449 73.3754 9.97527C71.6699 11.1624 71.2814 13.7074 72.5339 15.4806C73.5898 16.9748 75.5951 17.3475 77.0958 16.3246C78.0163 15.6974 78.5079 14.7894 78.6498 13.6959C78.969 11.2182 77.2232 9.33985 75.2598 9.4006Z" fill="#FBBC05"/>
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M98.7463 0.710449V18.9703C97.8694 18.9703 97.0022 18.9703 96.1011 18.9703C96.1011 12.8984 96.1011 6.82497 96.1011 0.710449H98.7463Z" fill="#34A853"/>
+                                            <path d="M39.6514 26.5148C37.9198 26.5148 36.7464 27.3692 36.7464 28.7363C36.7464 31.5729 41.0527 30.5818 41.0527 32.359C41.0527 32.9742 40.4944 33.3273 39.5603 33.3273C38.7058 33.3273 37.6805 32.9172 36.8603 32.1653L36.2793 33.3273C37.0995 34.0792 38.2843 34.5919 39.5375 34.5919C41.2919 34.5919 42.545 33.7147 42.545 32.2906C42.5564 29.4198 38.2502 30.354 38.2502 28.6109C38.2502 28.0755 38.7628 27.7793 39.5489 27.7793C40.1527 27.7793 41.0185 27.9958 41.8843 28.5198L42.4425 27.335C41.702 26.8451 40.6881 26.5148 39.6514 26.5148Z" fill="#888888"/>
+                                            <path d="M47.6723 34.5463H48.9597L48.9483 30.5704C48.9369 29.2375 48.0597 28.4401 46.4989 28.4401C45.3483 28.4401 44.7331 28.7021 43.8901 29.2033L44.4256 30.1147C45.0293 29.7046 45.6331 29.4995 46.2141 29.4995C47.1711 29.4995 47.661 29.9552 47.661 30.7185V30.9008H45.8268C44.3686 30.9122 43.537 31.6185 43.537 32.7235C43.537 33.7944 44.3572 34.6033 45.6673 34.6033C46.5445 34.6033 47.2394 34.3412 47.6723 33.8058V34.5463ZM45.9407 33.5666C45.2116 33.5666 44.7673 33.2134 44.7673 32.6666C44.7673 32.0856 45.1661 31.8577 46.0205 31.8577H47.661V32.4159C47.5926 33.0767 46.8749 33.5666 45.9407 33.5666Z" fill="#888888"/>
+                                            <path d="M53.083 27.1755C53.3564 27.1755 53.664 27.278 53.9146 27.4603L54.4159 26.4578C54.0285 26.173 53.5386 26.0363 53.0488 26.0363C52.0007 26.0363 50.964 26.7084 50.964 28.1211V28.7135H50.1665V29.6932H50.964V34.5463H52.2627V29.6932H53.8462V28.7135H52.2627V27.9958C52.2627 27.4261 52.6387 27.1755 53.083 27.1755Z" fill="#888888"/>
+                                            <path d="M57.002 28.4401C55.202 28.4514 53.9375 29.6932 53.9375 31.5274C53.9375 33.3501 55.1678 34.5919 57.0362 34.5919C58.0842 34.5919 58.9501 34.2159 59.5425 33.5666L58.8475 32.8261C58.4032 33.2818 57.7994 33.5324 57.1387 33.5324C56.1817 33.5324 55.464 32.9514 55.259 32.0172H59.8387C59.9981 29.8299 59.1323 28.4401 57.002 28.4401ZM55.2362 31.0603C55.3843 30.0919 56.0564 29.4881 57.0134 29.4881C58.0045 29.4881 58.6539 30.0805 58.6994 31.0603H55.2362Z" fill="#888888"/>
+                                            <path d="M64.2213 26.5717V34.5463H67.7643C69.5643 34.5463 70.6693 33.7261 70.6693 32.359C70.6693 31.2881 70.0313 30.5248 68.9605 30.3426C69.8263 30.1375 70.3617 29.4654 70.3617 28.5654C70.3617 27.3236 69.3364 26.5717 67.6845 26.5717H64.2213ZM65.5656 27.7679H67.6162C68.4706 27.7679 68.9832 28.1325 68.9832 28.8046C68.9832 29.4767 68.4706 29.8755 67.6162 29.8755H65.5656V27.7679ZM65.5656 31.0603H67.6162C68.6643 31.0603 69.2908 31.4818 69.2908 32.1881C69.2908 32.94 68.6643 33.3501 67.6162 33.3501H65.5656V31.0603Z" fill="#888888"/>
+                                            <path d="M73.4952 28.4856H72.1851V34.5463H73.4952V31.3793C73.5977 30.3426 74.3724 29.6248 75.5914 29.6932V28.4401C74.6344 28.4401 73.9053 28.873 73.4952 29.6932V28.4856Z" fill="#888888"/>
+                                            <path d="M79.266 28.4401C77.3863 28.4401 76.099 29.6818 76.099 31.516C76.099 33.3387 77.3863 34.5919 79.266 34.5919C81.1343 34.5919 82.4217 33.3387 82.4217 31.516C82.4217 29.6818 81.1343 28.4401 79.266 28.4401ZM79.266 29.5679C80.3483 29.5679 81.1115 30.3653 81.1115 31.5274C81.1115 32.7008 80.3483 33.4982 79.266 33.4982C78.1723 33.4982 77.4091 32.7008 77.4091 31.5274C77.4091 30.3653 78.1723 29.5679 79.266 29.5679Z" fill="#888888"/>
+                                            <path d="M90.618 34.5463L92.8281 28.4856H91.4952L89.9459 33.2476L88.4079 28.4856H87.0522L85.5257 33.2476L83.9536 28.4856H82.6093L84.8422 34.5463H86.1864L87.7244 30.0578L89.2624 34.5463H90.618Z" fill="#888888"/>
+                                            <path d="M95.4904 28.4287C94.3284 28.4287 93.2576 28.9527 93.2576 30.1831C93.2462 32.3704 96.436 31.6755 96.436 32.9172C96.436 33.3729 96.0031 33.5666 95.4449 33.5666C94.7841 33.5666 93.9411 33.2818 93.417 32.8147L92.95 33.7488C93.5538 34.2957 94.4993 34.5919 95.3879 34.5919C96.6069 34.5919 97.7119 34.0336 97.7119 32.7919C97.7233 30.5932 94.4993 31.197 94.4993 30.0805C94.4993 29.6476 94.8753 29.4767 95.3879 29.4767C95.9233 29.4767 96.5955 29.6818 97.1309 30.0122L97.6094 29.0438C97.0626 28.6565 96.2537 28.4287 95.4904 28.4287Z" fill="#888888"/>
+                                            <path d="M99.6797 25.9565C99.2468 25.9565 98.9164 26.2869 98.9164 26.754C98.9164 27.2097 99.2468 27.5401 99.6797 27.5401C100.113 27.5401 100.443 27.2097 100.443 26.754C100.443 26.2869 100.113 25.9565 99.6797 25.9565ZM100.329 34.5463V28.4856H99.0303V34.5463H100.329Z" fill="#888888"/>
+                                            <path d="M105.811 28.4401C104.785 28.4401 104.011 28.8046 103.578 29.6476V28.4856H102.268V34.5463H103.578V31.3223C103.669 30.3767 104.296 29.6818 105.298 29.6704C106.209 29.6704 106.756 30.2286 106.756 31.14V34.5463H108.066V30.7755C108.066 29.3286 107.223 28.4401 105.811 28.4401Z" fill="#888888"/>
+                                            <path d="M115.29 28.4856H113.991V29.4654C113.57 28.8046 112.875 28.4287 111.941 28.4401C110.334 28.4514 109.252 29.6135 109.252 31.3223C109.252 33.0653 110.346 34.2501 111.986 34.2501C112.898 34.2501 113.581 33.8855 113.991 33.2248V33.9881C113.991 35.0362 113.239 35.7083 112.089 35.7083C111.348 35.7083 110.756 35.4691 110.186 35.0476L109.628 35.9931C110.369 36.4944 111.2 36.7906 112.146 36.7906C114.048 36.7906 115.29 35.6969 115.29 33.9539V28.4856ZM112.248 33.2248C111.2 33.2248 110.494 32.4501 110.483 31.3565C110.494 30.2742 111.212 29.4995 112.248 29.4995C113.274 29.4995 113.991 30.2628 113.991 31.3565C113.991 32.4501 113.274 33.2248 112.248 33.2248Z" fill="#888888"/>
+                                            <path d="M19.2421 14.0367L18.0451 12.8397C17.881 12.6754 17.6813 12.5933 17.4467 12.5933C17.2119 12.5933 17.0123 12.6754 16.8481 12.8397L11.0742 18.6223L8.48653 16.0258C8.32221 15.8615 8.12272 15.7794 7.88809 15.7794C7.6533 15.7794 7.45382 15.8615 7.2895 16.0258L6.09251 17.2228C5.9282 17.3871 5.84607 17.5867 5.84607 17.8214C5.84607 18.056 5.9282 18.2557 6.09251 18.42L9.27862 21.606L10.4757 22.803C10.6399 22.9674 10.8395 23.0495 11.0742 23.0495C11.3088 23.0495 11.5084 22.9672 11.6727 22.803L12.8698 21.606L19.2421 15.2338C19.4062 15.0694 19.4885 14.8699 19.4885 14.6352C19.4886 14.4005 19.4062 14.201 19.2421 14.0367Z" fill="white"/>
+                                        </svg>
+                                    </li>
+                                </ul>
+                            </span>
+						{% endif %}
+					</div>
+				{% endif %}
+				<div class="holder-footer-section section-3 flex {{ (showAddress or showBusinessInfo) and showYampiBrand ? '-between' : '-hcenter'}}">
+					{% if showAddress or showBusinessInfo %}
+						<div class="holder-store-address">
+							{% if showAddress %}
+								<span>
+									{{ merchantData.company.address.street }}
+									{{ merchantData.company.address.number }}
+									{{ merchantData.company.address.complement ? ', ' ~ merchantData.company.address.complement : null }}
+								</span>
+								<span class="divisor">
+									-
+								</span>
+								<span>{{ merchantData.company.address.neighborhood }}</span>
+								<span class="divisor">
+									-
+								</span>
+								<span>{{ merchantData.company.address.city }}</span>
+								{% if showBusinessInfo %}
+									<br>
+								{% endif %}
+							{% endif %}
+							{% if showBusinessInfo %}
+								©
+								{{ "now"|date("Y") }}
+								{{ storeName }}
+								{% if storeDocument %}
+									<span class="store-document">
+										{{ isBusiness ? 'CNPJ:' : 'CPF:' }}
+										<a href="javascript:" class="no-action -clean">
+											{% if isBusiness %}
+												{{ storeDocument | mask('##.###.###/####-##') }}
+											{% else %}
+												{{ storeDocument | mask('###.###.###-##') }}
+											{% endif %}
+										</a>
+									</span>
+								{% endif %}
+							{% endif %}
+						</div>
+					{% endif %}
+					{% if showYampiBrand %}
+						<div class="holder-yampi flex">
+							<span>Usamos</span>
+							<a href="https://www.yampi.com.br?utm_source=store_v2_footer&utm_campaign=yampi_brand_footer_link" target="_blank" rel="noreferrer nofollow" class="yampi">
+								<img v-lazyload src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="https://icons.yampi.me/svg/logo-yampi{{ color_is_light(section.params.background_color) ? null : '-negative' }}.svg" alt="Yampi - Plataforma de E-commerce" width="71" height="24" class="h-va-middle h-inline-block h-ml10"/>
+							</a>
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</vue-section>
+</rocket-emitter>
