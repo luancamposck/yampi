@@ -661,6 +661,10 @@ div>section:not(.main-banner):not(.category-content):not(.main-product-content):
 }
 
 @media only screen and (max-width: 700px) {
+    .desktop-hidden {
+        padding: 0 16px;
+    }
+
     .product-header-container.desktop-hidden {
         padding-top: 20px;
     }
