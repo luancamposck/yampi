@@ -737,3 +737,9 @@ span.main-product-reference {
 .fa-whatsapp:before {
     content: "\f232";
 }
+
+
+// Esconde as paginations(bolinhas azuis) em todas as collections, MENOS no banner principal
+section:not(.main-banner) ul.splide__pagination {
+  display: none !important;
+}
