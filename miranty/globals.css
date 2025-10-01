@@ -1,0 +1,250 @@
+/* geral */
+:root {
+    --container-max-width: 1300px;
+}
+
+/* header */
+.cart-quantity {
+    color: var(--color-btn-secundary-background);
+}
+.cart-quantity {
+    color: var(--color-btn-secundary-background);
+}
+.header-content .categories .categories-menu {
+    justify-content: center;
+}
+.categories-menu.h-navigation .h-anchor-container {
+  font-size:13px;
+  font-weight: 700;
+}
+.section-header:has(.h-left-container) .header-row.--left:not(.categories) {
+    width: min(100%, 1300px);
+}
+
+/* diferenciais tarja */
+section.highlight {
+  margin-top: 20px !important;
+  margin-bottom:25px !important;
+}
+
+/* 2 banners categorias */
+@media (max-width: 961px) {
+    .banner_2-3 {
+        margin-top: 0px !important;
+    }
+}
+
+/* Vitrine Coleções */
+.theme-title {
+    color: #111111;
+    font-size: 42px;
+    line-height: 1.25;
+    margin-bottom: 14px;
+}
+.holder-collection .flex.-between {
+    justify-content: center;
+}
+
+.box-product {
+    border: solid 1px transparent !important;
+    border-radius: 8px !important;
+}
+
+.box-product:hover {
+    border: solid 1px #eeeeee !important;
+}
+
+@media only screen and (max-width: 1024px) {
+    .box-product {
+      border: solid 1px #eeeeee !important;
+      border-radius: 8px !important;
+    }
+}
+
+.box-product .holder-info .product-name {
+    color: #666;
+    line-height: 18px;
+    font-size: 13px;
+    text-transform: uppercase;
+}
+.box-product .holder-info .product-prices .flex .product-actual-price {
+    line-height: normal;
+    font-size: 22px;
+    font-weight: var(--product-price-font-weight);
+    color: #111111 !important;
+}
+.holder-info .product-prices .installment-text {
+    margin-top: 20px;
+    color: #111111;
+    font-size: 15px !important;
+}
+
+.installment-text {
+    color: #111;
+    font-weight: 700;
+}
+.installment-text .price {
+    color: #111;
+    font-weight: 700;
+}
+
+/* tags desconto */
+.discount-tag {
+    border-radius: 2px;
+    padding: 5px 6px 0 5px;
+    line-height: 1;
+    font-size: 16px;
+}
+.discount-tag span:after {
+    content: " OFF";
+}
+
+/* Depoimentos home */
+.top-ratings .container .flex.-between {
+    justify-content: center !important;
+}
+.holder-review .review-content {
+    min-height: auto;
+    padding: 49px 52px 46px;
+    background-color: #f5f5f5;
+    text-align: center;
+    border-radius: 8px;
+}
+.holder-review .review-content .-plr10 {
+    padding: 0 5px;
+}
+.holder-review .review-content .icon-star-dynamic {
+    width: 22px;
+    height: 22px
+}
+
+/* Footer */
+.footer .holder-footer-logo .-description {
+    color: #666;
+    font-size: 15px;
+    line-height: 1.46;
+}
+.footer .holder-footer .section-1 {
+    max-width: 1300px;
+}
+.footer {
+    --footer-font-color: #666;
+}
+.footer .-contact .contact-whatsapp {
+    font-size: 24px;
+    color: #00aab2;
+    font-weight: 800;
+}
+.footer .-contact .contact-email {
+    font-size: 20px;
+    color: #333;
+    font-weight: 800;
+}
+
+/* Página de produto */
+.main-product-prices .actual-price {
+    color: #111111;
+    font-size: 30px;
+    margin-bottom: 9px;
+}
+.loader-button.btn.btn-primary::before {
+    content: url('https://awesome-assets.yampi.me/assets/stores/oculosnow/v1/img/icons/lock.svg');
+    display: inline-block;
+    width: auto;
+    height: auto;
+    margin-right:5px;
+}
+.main-product-name.theme-title {
+    color: #111;
+    text-transform: uppercase;
+    font-size: 38px;
+}
+.main-product-content .main-product-prices .installment-text {
+    font-size: 18px;
+    color: #111;
+    font-weight: 600;
+}
+.product .theme-title {
+    color: #111;
+}
+.main-product-content .main-product-prices .installment-text .price {
+    font-size: 18px;
+    color: #111;
+    font-weight: 600;
+}
+.main-product-content .show-installments {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #222;
+}
+.cashback.align-left {
+    justify-content: center;
+}
+.main-product-info .product-customizations .cashback.mt-21.mb-21 {
+    margin-top: 5px !important;
+}
+.cashback .cashback-text {
+    color: #222;
+}
+.main-product-inventory-countdown {
+    margin-top: 10px;
+    padding: 27px 40px;
+    background: #111;
+    font-size: 15px;
+    color: #fff;
+    border: 0px;
+    border-radius: 0px;
+}
+.main-product-inventory-countdown {
+    margin-top: 10px;
+    padding: 27px 40px;
+    background: #111;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    border: 0px;
+    border-radius: 0px;
+}
+.main-product-inventory-countdown .quantity-left {
+    display: inline-block;
+    padding: 0px 5px 0px 5px;
+    min-width: 21px;
+    height: 21px;
+    background-color: #00aab2;
+    color: #fff;
+}
+.main-product-content .percentage-bar-holder .percentage-bar {
+    background-color: #00aab2 !important;
+}
+.main-product-inventory-countdown .countdown-timer{
+    width: auto;
+    text-align: left;
+    white-space: nowrap;
+    font-size: 41px;
+    font-weight: var(--font-bold);
+    color: #ffffff;
+    margin: 0 6px;
+}
+.main-product-inventory-countdown .countdown-text {
+    color: #ffffff;
+    margin: 0 6px;
+    text-align: left;
+    line-height: 1;
+
+}
+@media (min-width: 961px) {
+    .main-product-inventory-countdown .countdown-text {
+    width: 19%;
+    }
+}
+.main-product-inventory-countdown .countdown {
+    flex-wrap: unset;
+    display: flex;
+    justify-content: space-between;
+}
+.buy-together.container {
+    padding: 50px 64px 64px;
+    margin-top: 73px;
+    border-radius: 2px;
+    border: 1px dashed #111;
+}
