@@ -27,6 +27,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+    .discount-tag {
+        padding: 5px 6px;
+        display: flex;
+        align-items: center;
+    }
+
     @media only screen and (max-width: 700px) {
         .discount-tag {
             position: absolute;
