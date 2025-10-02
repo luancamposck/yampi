@@ -1,0 +1,62 @@
+@import "../global/mixins/_breakpoints.scss";
+
+.highlight {
+    margin-top: 22px;
+    margin-bottom: 49px;
+
+    @media screen and (min-width: 901px) {
+        &-holder {
+            display: flex;
+            justify-content: center;
+        }
+    }
+
+    &-container {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 59px;
+
+        // remove padding-left do primeiro
+        &:first-child {
+            padding-left: 0;
+        }
+
+        // remove padding-right do último
+        &:last-child {
+            padding-right: 0;
+        }
+
+        @media screen and (max-width: 900px) {
+            justify-content: center;
+            padding: 00px;
+        }
+
+        &-flexible {
+            align-items: center;
+            display: flex;
+        }
+    }
+
+    &-text {
+        font-size: 13px;
+        max-width: 210px;
+    }
+
+    .container {
+        overflow-y: hidden;
+    }
+
+    // New Code
+    .splide:not(.splide--ttb) .splide__arrow {
+        width: 20px;
+        height: 20px;
+    }
+
+    .splide:not(.splide--ttb) .splide__arrow, .splide:not(.splide--ttb) .splide__arrow:hover {
+        background-color: transparent;
+    }
+
+    .splide:not(.splide--ttb) .splide__arrow {
+        box-shadow: none;
+    }
+}
