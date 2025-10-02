@@ -60,3 +60,9 @@
         box-shadow: none;
     }
 }
+
+@media only screen and (min-width: 701px ) {
+  section.highlight {
+    margin-top: 20px !important;
+  }
+}
