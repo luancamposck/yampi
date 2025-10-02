@@ -56,13 +56,14 @@
 
 .banner-2 {
     .flex {
+        column-gap: 22px;
         & > * + * {
-            margin-left: 2%;
+            // margin-left: 2%;
         }
     }
 
     .banner {
-        width: 583px;
+        width: 50%;
     }
 }
 
