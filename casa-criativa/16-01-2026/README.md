@@ -11,3 +11,10 @@ Vue: `components/product/HighlightsCarousel.vue`
 SASS: `assets/styles/sections/highlight.scss`
 
 ## quantity-limit
+> Demanda para que o QuantitySelector.vue fosse limitado a quantidade em estoque e
+> aparecesse uma mensagem "Atingiu limite máximo disponível"
+
+Foram necessário apenas dois vue nessa demanda:
+
+Vue: `components/generic/QuantitySelector.vue`
+Vue: `components/product/ProductCustomization.vue`
