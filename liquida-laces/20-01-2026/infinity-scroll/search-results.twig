@@ -1,0 +1,149 @@
+{% set slug = content.data.slug %}
+
+{% set pageName = content.data.meta.name %}
+
+{% if context == 'search' %}
+    {% set pageName = "Busca por \"#{content.data.q}\"" %}
+{% endif %}
+
+<div class="flex -between -vtop">
+    <h1 class="theme-title">
+        {{ strip_mustache(pageName) }}
+    </h1>
+    {% if customData.config.params.show_sort and content.data | length %}
+        <div class="select-order flex -vcenter -hend">
+            <span class="-title">
+                ORDENAR POR:
+            </span>
+
+            <select
+                is="custom-select"
+                id="category-order-select"
+                name="category-order"
+                :value="selectedOrder"
+                @change="updateOrderBy"
+            >
+                <option value="relevance">Relevância</option>
+                <option value="best_sellers">Mais vendidos</option>
+                <option value="highest_price">Maior preço</option>
+                <option value="lowest_price">Menor preço</option>
+                <option value="newest">Lançamentos</option>
+                <option value="rating">Melhor avaliação</option>
+                <option value="name_asc">A-Z</option>
+                <option value="name_desc">Z-A</option>
+            </select>
+        </div>
+    {% endif %}
+</div>
+
+{% if content.data.meta.description %}
+    <div class="category-description -loading">
+        <div is="read-more" class="editor-theme">
+            {{ content.data.meta.description | raw }}
+        </div>
+    </div>
+{% endif %}
+
+{% if content.data.data | length %}
+    <category-options
+        :is-mosaic="isMosaic"
+        :show-sort="{{ customData.config.params.show_sort ? 'true' : 'false' }}"
+        :show-filters="{{ customData.config.params.filters_enabled ? 'true' : 'false' }}"
+        :selected-order="selectedOrder"
+        @change="updateOrderBy"
+        @change-grid="updateGrid"
+        ref="categoryOptions"
+    ></category-options>
+{% endif %}
+
+{% if customData.config.params.filters_enabled %}
+    <selected-filters></selected-filters>
+{% endif %}
+
+{% if customData.config.params.show_banners and context == 'category' %}
+    <banners
+        section="main-banner"
+        class="main-banner"
+        custom-class="flex"
+        :ids="[]"
+        :carousel="true"
+        :dimensions="[]"
+        :slider-delay="{{ customData.config.params.slider_delay }}"
+        slug="{{ slug }}"
+    ></banners>
+{% endif %}
+
+{# ======================================================
+   ÍNICIO CÓDIGO NOVO
+   - Guard com typeof pra NÃO quebrar quando searchData não existir
+   - Se existir searchData: usa fluxo novo (LoadMore)
+   - Se NÃO existir searchData: fallback SSR antigo
+   ====================================================== #}
+
+{# ====== Fluxo NOVO (searchData existe) ====== #}
+<div v-if="typeof searchData !== 'undefined'">
+    <load-more-results
+        v-if="searchData && searchData.length"
+        :search-data="searchData"
+        :paginate="paginate"
+        :loading="loading"
+        :query-params="queryParams"
+        :update-current-page="updateCurrentPage"
+        :is-mobile="isMobile"
+        :products-per-line="2"
+    >
+        <template slot-scope="data">
+            {% include "elements/box-product.twig" with { disable_slot_scope: true } %}
+        </template>
+    </load-more-results>
+
+    <div v-else class="alert -yellow">Nenhum produto foi encontrado.</div>
+</div>
+
+{# ====== Fluxo ANTIGO (fallback SSR) ====== #}
+<div v-else>
+    {# ======================================================
+       ÍNICIO CÓDIGO ANTIGO
+       (lista SSR + loader/paginate padrão)
+       ====================================================== #}
+    {% if content.data.data | length %}
+        {% include 'elements/products-list.twig' with { 'products': content.data.data } %}
+
+        {# ===================== ÍNICIO CÓDIGO ANTIGO ===================== #}
+        {#
+        <loader
+            class="paginate-loader"
+            v-if="paginate.loading"
+            :height="40"
+            :width="50"
+        ></loader>
+
+        <paginate
+            v-else-if="paginate.pageCount > 1"
+            :page-count="paginate.pageCount"
+            :pager-count="isMobile ? 5 : 7"
+            :value="paginate.currentPage"
+            :disabled="{{ isPreview ? 'true' : 'false' }}"
+            @input="updateCurrentPage($event)"
+        ></paginate>
+        #}
+        {# ====================== FIM CÓDIGO ANTIGO ======================= #}
+
+        {# ===================== ÍNICIO CÓDIGO NOVO ======================= #}
+        <load-more-append
+            v-if="paginate && paginate.pageCount > 1"
+            :page-count="paginate.pageCount"
+        ></load-more-append>
+        {# ====================== FIM CÓDIGO NOVO ========================= #}
+
+    {% else %}
+        <div class="alert -yellow">Nenhum produto foi encontrado.</div>
+    {% endif %}
+    {# ======================================================
+       FIM CÓDIGO ANTIGO
+       ====================================================== #}
+</div>
+
+{# ======================================================
+   FIM CÓDIGO NOVO
+   ====================================================== #}
