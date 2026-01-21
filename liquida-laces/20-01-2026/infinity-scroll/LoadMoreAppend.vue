@@ -69,11 +69,17 @@ export default {
   methods: {
     buildFetchUrl(page) {
       const url = new URL(window.location.href)
+
+      // IMPORTANTE: no preview, buscamos dados como produção
+      url.searchParams.delete("preview")
+
       url.searchParams.set("page", String(page))
+
+      // IMPORTANTE: força resposta “resultsOnly” (normalmente vem com :product)
       url.searchParams.set("resultsOnly", "true")
+
       return url.toString()
     },
-
     decodeHtmlEntities(str) {
       const t = document.createElement("textarea")
       t.innerHTML = str
@@ -128,10 +134,14 @@ export default {
         }
 
         // primeira hidratação: remove SSR pra não duplicar
-        if (!this.hydrated) {
+        if (!this.hydrated && this.accumulated.length > 0) {
           this.hydrated = true
+
           const ssr = document.getElementById("ssr-products-wrapper")
-          if (ssr) ssr.remove()
+          if (ssr) {
+            // melhor “esconder” do que remover (evita flicker e dá fallback fácil)
+            ssr.style.display = "none"
+          }
         }
       } finally {
         this.isLoading = false
