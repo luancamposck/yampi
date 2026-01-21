@@ -1,18 +1,33 @@
 <template>
-  <div class="load-more-footer" v-if="pageCount > 1">
-    <button
-      v-if="canLoadMore"
-      class="btn-load-more"
-      type="button"
-      :disabled="isLoading"
-      @click="loadMore"
+  <div class="load-more-results">
+    <!-- Lista Vue (a “verdadeira” depois que hidratou) -->
+    <products-list
+      v-if="hydrated"
+      :products="accumulated"
+      :is-mobile="isMobile"
+      :products-per-line="productsPerLine"
+      :loading="isLoading"
     >
-      <span v-if="isLoading">Carregando...</span>
-      <span v-else>Carregar mais</span>
-    </button>
+      <template slot-scope="data">
+        <slot :product="data.product" :loading="data.loading" />
+      </template>
+    </products-list>
 
-    <div v-else class="end-results">
-      Sem mais produtos
+    <div v-if="hydrated && accumulated.length" class="load-more-footer">
+      <button
+        v-if="canLoadMore"
+        class="btn-load-more"
+        type="button"
+        :disabled="isLoading"
+        @click="loadMore"
+      >
+        <span v-if="isLoading">Carregando...</span>
+        <span v-else>Carregar mais</span>
+      </button>
+
+      <div v-else class="end-results">
+        Você chegou ao fim 🙂
+      </div>
     </div>
   </div>
 </template>
@@ -23,11 +38,16 @@ export default {
 
   props: {
     pageCount: { type: Number, default: 1 },
+    isMobile: { type: Boolean, default: false },
+    productsPerLine: { type: Number, default: 2 },
   },
 
   data: () => ({
+    hydrated: false,
     isLoading: false,
     currentPageLocal: 1,
+    accumulated: [],
+    seenIds: new Set(),
   }),
 
   computed: {
@@ -37,110 +57,91 @@ export default {
   },
 
   mounted() {
-    // Pega a página atual pela URL (se não tiver, é 1)
+    // página atual pela URL
     const url = new URL(window.location.href)
     const page = Number(url.searchParams.get("page") || 1)
     this.currentPageLocal = Number.isFinite(page) ? page : 1
+
+    // carrega a página atual e “toma conta” do SSR
+    this.loadPage(this.currentPageLocal)
   },
 
   methods: {
-      activateImages(nodes) {
-      for (const node of nodes) {
-        // pega <img> lazy e também custom-image se for o caso
-        const imgs = node.querySelectorAll("img[data-src]")
-        imgs.forEach((img) => {
-          const real = img.getAttribute("data-src")
-          if (real && img.getAttribute("src") !== real) {
-            img.setAttribute("src", real)
-            img.classList.remove("-loading")
-          }
-        })
-      }
-    },
-    buildFetchUrl(nextPage) {
+    buildFetchUrl(page) {
       const url = new URL(window.location.href)
-      url.searchParams.set("page", String(nextPage))
-
-      // tenta pedir só resultados (se o backend reconhecer)
+      url.searchParams.set("page", String(page))
       url.searchParams.set("resultsOnly", "true")
-
       return url.toString()
     },
 
-    extractProductNodesFromHtml(html) {
+    decodeHtmlEntities(str) {
+      const t = document.createElement("textarea")
+      t.innerHTML = str
+      return t.value
+    },
+
+    parseProductsFromHtml(html) {
       const tmp = document.createElement("div")
       tmp.innerHTML = html
 
-      const list = tmp.querySelector(".products-list")
-      if (!list) return []
+      const cards = Array.from(tmp.querySelectorAll(".products-list .box-product:not(.-clear)"))
+      const products = []
 
-      // pega só os cards (remove os clears)
-      return Array.from(list.querySelectorAll(".box-product:not(.-clear)"))
-    },
+      for (const card of cards) {
+        // tenta pegar o product pelo buy-button (melhor fonte)
+        const buy = card.querySelector("buy-button[\\:product]")
+        const avg = card.querySelector("average-rating[\\:product]")
+        const raw = (buy && buy.getAttribute(":product")) || (avg && avg.getAttribute(":product"))
 
-    appendToCurrentList(nodes) {
-      const targetList = document.querySelector(".products-list")
-      if (!targetList) return
+        if (!raw) continue
 
-      // remove clears atuais
-      targetList.querySelectorAll(".box-product.-clear").forEach(el => el.remove())
-
-      // se existir mosaic columns (mobile mosaic), anexa alternando
-      const cols = targetList.querySelectorAll(".mosaic-column")
-      if (cols.length === 2) {
-        const allExisting = Array.from(targetList.querySelectorAll(".box-product[order]"))
-        const maxOrder = allExisting.reduce((acc, el) => {
-          const v = Number(el.getAttribute("order"))
-          return Number.isFinite(v) ? Math.max(acc, v) : acc
-        }, -1)
-
-        let order = maxOrder + 1
-        for (const node of nodes) {
-          node.setAttribute("order", String(order))
-          const col = order % 2 === 0 ? cols[0] : cols[1]
-          col.appendChild(node)
-          order++
+        try {
+          const decoded = this.decodeHtmlEntities(raw)
+          const obj = JSON.parse(decoded)
+          if (obj && obj.id) products.push(obj)
+        } catch (e) {
+          // se falhar, só ignora esse card
         }
-      } else {
-        // grid normal: append direto
-        for (const node of nodes) targetList.appendChild(node)
       }
 
-      // recoloca clears
-      for (let i = 0; i < 3; i++) {
-        const clear = document.createElement("div")
-        clear.className = "box-product -clear"
-        targetList.appendChild(clear)
-      }
+      return products
     },
 
-    async loadMore() {
-      if (!this.canLoadMore || this.isLoading) return
-
+    async loadPage(page) {
+      if (this.isLoading) return
       this.isLoading = true
-      const nextPage = this.currentPageLocal + 1
 
       try {
-        const res = await fetch(this.buildFetchUrl(nextPage), {
+        const res = await fetch(this.buildFetchUrl(page), {
           headers: { "X-Requested-With": "XMLHttpRequest" },
         })
         const html = await res.text()
 
-        const nodes = this.extractProductNodesFromHtml(html)
-        if (!nodes.length) {
-          // se não veio nada, para por aqui
-          this.currentPageLocal = this.pageCount
-          return
+        const incoming = this.parseProductsFromHtml(html)
+
+        // dedupe por ID
+        for (const p of incoming) {
+          if (!this.seenIds.has(p.id)) {
+            this.seenIds.add(p.id)
+            this.accumulated.push(p)
+          }
         }
 
-        this.appendToCurrentList(nodes)
-        this.activateImages(nodes)
-        this.currentPageLocal = nextPage
-      } catch (err) {
-        console.error("[LoadMoreAppend] erro ao carregar mais:", err)
+        // primeira hidratação: remove SSR pra não duplicar
+        if (!this.hydrated) {
+          this.hydrated = true
+          const ssr = document.getElementById("ssr-products-wrapper")
+          if (ssr) ssr.remove()
+        }
       } finally {
         this.isLoading = false
       }
+    },
+
+    loadMore() {
+      if (!this.canLoadMore) return
+      this.currentPageLocal += 1
+      this.loadPage(this.currentPageLocal)
     },
   },
 }

@@ -73,77 +73,52 @@
     ></banners>
 {% endif %}
 
-{# ======================================================
-   ÍNICIO CÓDIGO NOVO
-   - Guard com typeof pra NÃO quebrar quando searchData não existir
-   - Se existir searchData: usa fluxo novo (LoadMore)
-   - Se NÃO existir searchData: fallback SSR antigo
-   ====================================================== #}
+{# ===================== ÍNICIO CÓDIGO ANTIGO ===================== #}
+{#
+{% if content.data.data | length %}
+    {% include 'elements/products-list.twig' with { 'products': content.data.data } %}
 
-{# ====== Fluxo NOVO (searchData existe) ====== #}
-<div v-if="typeof searchData !== 'undefined'">
-    <load-more-results
-        v-if="searchData && searchData.length"
-        :search-data="searchData"
-        :paginate="paginate"
-        :loading="loading"
-        :query-params="queryParams"
-        :update-current-page="updateCurrentPage"
+    <loader
+        class="paginate-loader"
+        v-if="paginate.loading"
+        :height="40"
+        :width="50"
+    ></loader>
+
+    <paginate
+        v-else-if="paginate.pageCount > 1"
+        :page-count="paginate.pageCount"
+        :pager-count="isMobile ? 5 : 7"
+        :value="paginate.currentPage"
+        :disabled="{{ isPreview ? 'true' : 'false' }}"
+        @input="updateCurrentPage($event)"
+    ></paginate>
+{% else %}
+    <div class="alert -yellow">Nenhum produto foi encontrado.</div>
+{% endif %}
+#}
+{# ====================== FIM CÓDIGO ANTIGO ======================= #}
+
+
+{# ===================== ÍNICIO CÓDIGO NOVO ======================= #}
+{% if content.data.data | length %}
+    {# Wrapper SSR: apenas a primeira “pintura” server-side #}
+    <div id="ssr-products-wrapper">
+        {% include 'elements/products-list.twig' with { 'products': content.data.data } %}
+    </div>
+
+    {# Daqui pra frente quem decidr é o LoadMoreAppend #}
+    <load-more-append
+        v-if="paginate && paginate.pageCount > 1"
+        :page-count="paginate.pageCount"
         :is-mobile="isMobile"
         :products-per-line="2"
     >
         <template slot-scope="data">
             {% include "elements/box-product.twig" with { disable_slot_scope: true } %}
         </template>
-    </load-more-results>
-
-    <div v-else class="alert -yellow">Nenhum produto foi encontrado.</div>
-</div>
-
-{# ====== Fluxo ANTIGO (fallback SSR) ====== #}
-<div v-else>
-    {# ======================================================
-       ÍNICIO CÓDIGO ANTIGO
-       (lista SSR + loader/paginate padrão)
-       ====================================================== #}
-    {% if content.data.data | length %}
-        {% include 'elements/products-list.twig' with { 'products': content.data.data } %}
-
-        {# ===================== ÍNICIO CÓDIGO ANTIGO ===================== #}
-        {#
-        <loader
-            class="paginate-loader"
-            v-if="paginate.loading"
-            :height="40"
-            :width="50"
-        ></loader>
-
-        <paginate
-            v-else-if="paginate.pageCount > 1"
-            :page-count="paginate.pageCount"
-            :pager-count="isMobile ? 5 : 7"
-            :value="paginate.currentPage"
-            :disabled="{{ isPreview ? 'true' : 'false' }}"
-            @input="updateCurrentPage($event)"
-        ></paginate>
-        #}
-        {# ====================== FIM CÓDIGO ANTIGO ======================= #}
-
-        {# ===================== ÍNICIO CÓDIGO NOVO ======================= #}
-        <load-more-append
-            v-if="paginate && paginate.pageCount > 1"
-            :page-count="paginate.pageCount"
-        ></load-more-append>
-        {# ====================== FIM CÓDIGO NOVO ========================= #}
-
-    {% else %}
-        <div class="alert -yellow">Nenhum produto foi encontrado.</div>
-    {% endif %}
-    {# ======================================================
-       FIM CÓDIGO ANTIGO
-       ====================================================== #}
-</div>
-
-{# ======================================================
-   FIM CÓDIGO NOVO
-   ====================================================== #}
+    </load-more-append>
+{% else %}
+    <div class="alert -yellow">Nenhum produto foi encontrado.</div>
+{% endif %}
+{# ====================== FIM CÓDIGO NOVO ========================= #}
