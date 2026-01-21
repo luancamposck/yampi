@@ -48,6 +48,9 @@ export default {
     currentPageLocal: 1,
     accumulated: [],
     seenIds: new Set(),
+
+    takeoverTries: 0,
+    takeoverDone: false,
   }),
 
   computed: {
@@ -67,6 +70,26 @@ export default {
   },
 
   methods: {
+      safeTakeoverSSR() {
+          if (this.takeoverDone) return
+
+          // procura cards Vue renderizados (box-product vem do teu box-product.twig)
+          const vueCards = this.$el.querySelectorAll(".box-product:not(.-clear)").length
+
+          if (vueCards > 0) {
+            const ssr = document.getElementById("ssr-products-wrapper")
+            if (ssr) ssr.style.display = "none"
+
+            this.takeoverDone = true
+            return
+          }
+
+          // ainda não renderizou: tenta de novo algumas vezes
+          if (this.takeoverTries < 10) {
+            this.takeoverTries += 1
+            setTimeout(() => this.safeTakeoverSSR(), 80)
+          }
+        },
     buildFetchUrl(page) {
       const url = new URL(window.location.href)
 
@@ -137,11 +160,9 @@ export default {
         if (!this.hydrated && this.accumulated.length > 0) {
           this.hydrated = true
 
-          const ssr = document.getElementById("ssr-products-wrapper")
-          if (ssr) {
-            // melhor “esconder” do que remover (evita flicker e dá fallback fácil)
-            ssr.style.display = "none"
-          }
+          this.$nextTick(() => {
+            this.safeTakeoverSSR()
+          })
         }
       } finally {
         this.isLoading = false
